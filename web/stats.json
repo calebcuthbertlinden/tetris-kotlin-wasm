@@ -1,0 +1,25 @@
+{
+  "colors" : [
+    {
+      "color": 1,
+      "counter": 100
+    },
+    {
+      "color": 2,
+      "counter": 100
+    },
+    {
+      "color": 3,
+      "counter": 100
+    },
+    {
+      "color": 4,
+      "counter": 500
+	  
+    },
+    {
+      "color": 5,
+      "counter": 100
+    }
+  ]
+}
