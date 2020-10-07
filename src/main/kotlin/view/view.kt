@@ -50,56 +50,6 @@ open class Layout(val rect: DOMRect)  {
 class View(canvas: Canvas): Layout(canvas.getBoundingClientRect()) {
     val context = canvas.getContext("2d");
 
-    fun poly(x1: Int, y11: Int, y12: Int, x2: Int, y21: Int, y22: Int, style: String) = with(context) {
-        beginPath()
-        lineWidth = 2; // In pixels
-        setter("strokeStyle", style)
-        setter("fillStyle", style)
-
-        moveTo(x1, fieldHeight - y11)
-        lineTo(x1, fieldHeight - y12)
-        lineTo(x2, fieldHeight - y22)
-        lineTo(x2, fieldHeight - y21)
-        lineTo(x1, fieldHeight - y11)
-
-        fill()
-
-        closePath()
-        stroke()
-    }
-
-    fun showValue(index: Int, color: String) = with(context) {
-        val textCellHeight = teamHeight / Model.tupleSize
-        val textBaseline = index * textCellHeight + textCellHeight / 2
-
-        // The team number rectangle
-        fillStyle = Style.teamNumberColor
-        fillRect(teamOffsetX + teamPad,  teamHeight - textBaseline - teamRect/2, teamRect, teamRect)
-
-        // The team number rectangle
-        fillStyle = color
-        fillRect(resultOffsetX,  teamHeight - textBaseline - teamRect/2, teamRect/2, teamRect)
-    }
-
-    fun showLegend() = with(context){
-        setter("font", "16px monospace")
-        setter("textAlign", "left")
-        setter("textBaseline", "top")
-        fillStyle = Style.fontColor
-
-        fillText("-10 sec", legendPad, legendOffsetY + legendPad, legendWidth)
-        setter("textAlign", "right")
-        fillText("now", legendWidth - legendPad, legendOffsetY + legendPad, legendWidth)
-    }
-
-    fun scaleX(x: Int): Int {
-        return x * fieldWidth / (Model.backLogSize - 2)
-    }
-
-    fun scaleY(y: Float): Int {
-        return (y * fieldHeight).toInt()
-    }
-
     fun clean() {
         var yCoord = 0
         for (rows in 0 until 20) {
