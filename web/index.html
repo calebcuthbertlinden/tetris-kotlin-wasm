@@ -12,14 +12,28 @@
         height: 100%;
         margin: 0px;
       }
+      #game {
+        width: 400px;
+        height: 800px;
+      }
     </style>
   </head>
   <body>
     <h2>Tetris</h2>
     <h4>An introduction to Web Assembly + Kotlin</h4>
+    <h4><a href="www.google.com">Learn how to create Tetris with Kotlin + WASM</a></h4>
     <hr/>
-    <canvas id="game">
-  </canvas> 
+    <div>
+      <h3>How to play</h3>
+      <ul>
+        <li>Press 'A' to move left</li>
+        <li>Press 'D' to move right</li>
+        <li>Press 'W' to rotate</li>
+        <li>Press 'S' to speed up the descent</li>
+      </ul>
+    </div>
+    <hr/>
+    <canvas id="game"></canvas>
     <script wasm="./tetris.wasm" src="./tetris.wasm.js"></script>
   </body>
 </html>

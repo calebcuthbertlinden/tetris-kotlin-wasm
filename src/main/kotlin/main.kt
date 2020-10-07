@@ -2,6 +2,7 @@ import kotlinx.interop.wasm.dom.*
 import kotlinx.wasm.jsinterop.*
 
 const val gameLoopInterval = 1000;
+var gameCounter = 0;
 
 /**
  * This is the game loop that updates the Tetris board with the latest state of the Tetronimos
@@ -24,9 +25,12 @@ fun tetrisGameLoop(canvas: Canvas) {
                     val counter = colors[i].getInt("counter")
                     tuple[color - 1] = counter
                 }
-                Model.updateBoard(tuple)
+
+                Model.updateBoard(tuple, gameCounter)
             }.
             then { View(canvas).render() }
+
+    gameCounter++;
 }
 
 /**
@@ -39,7 +43,15 @@ fun updateBoard(): String {
 
 fun main(args: Array<String>) {
     val canvas = document.getElementById("game").asCanvas
+
+    Model.createBoard()
+
     setInterval(gameLoopInterval) {
+
         tetrisGameLoop(canvas)
+
+        if (gameCounter == 20) {
+            gameCounter = 0;
+        }
     }
 }

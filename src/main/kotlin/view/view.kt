@@ -81,23 +81,6 @@ class View(canvas: Canvas): Layout(canvas.getBoundingClientRect()) {
         fillRect(resultOffsetX,  teamHeight - textBaseline - teamRect/2, teamRect/2, teamRect)
     }
 
-    fun showText(index: Int, value: Int) = with(context) {
-        val textCellHeight = teamHeight / Model.tupleSize
-        val textBaseline = index * textCellHeight + textCellHeight / 2
-
-        // The team number in the rectangle
-        setter("font", "16px monospace")
-        setter("textAlign", "center")
-        setter("textBaseline", "middle")
-        fillStyle = Style.fontColor
-        fillText("${index + 1}", teamOffsetX + teamPad + teamRect/2,  teamHeight - textBaseline, teamWidth)
-
-        // The score
-        setter("textAlign", "right")
-        fillStyle = Style.fontColor
-        fillText("$value", resultOffsetX + resultWidth -  resultPad,  resultHeight - textBaseline,  resultWidth)
-    }
-
     fun showLegend() = with(context){
         setter("font", "16px monospace")
         setter("textAlign", "left")
@@ -118,53 +101,26 @@ class View(canvas: Canvas): Layout(canvas.getBoundingClientRect()) {
     }
 
     fun clean() {
-        context.fillStyle = Style.backgroundColor
-        context.fillRect(0, 0, rectWidth, rectHeight)
+        var yCoord = 0
+        for (rows in 0 until 20) {
+            var xCoord = 0
+            for (i in 0 until 10) {
+                context.fillStyle = "#4bb8f6"
+                context.fillRect(xCoord, yCoord, 40, 10);
+                xCoord = xCoord + 40
+            }
+            yCoord = yCoord + 10
+        }
     }
 
     fun render() {
         clean()
-        // we take one less, so that there is no jump from the last to zeroth.
-        for (t in 0 until Model.backLogSize - 2) {
-            val index = (Model.current + t) % (Model.backLogSize - 1)
 
-            val oldTotal = Model.tuple(index).sum()
-            val newTotal = Model.tuple(index + 1).sum()
+        context.fillStyle = "#7a6aea"
+        context.fillRect(40, 10 * Model.counter, 40, 10);
 
-            if (oldTotal == 0 || newTotal == 0) continue // so that we don't divide by zero
+        // show frozen tetronimos on board
+        /* for (tetr in 0 until Model.tetronimos.size) {}*/
 
-            var oldHeight = 0;
-            var newHeight = 0;
-
-            for (i in 0 until Model.tupleSize) {
-                val style = Model.styles[i]
-
-                val oldValue = Model.colors(index, i)
-                val newValue = Model.colors(index+1, i)
-
-                val x1 = scaleX(t)
-                val x2 = scaleX(t+1)
-
-                val y11 = scaleY(oldHeight.toFloat() / oldTotal.toFloat())
-                val y21 = scaleY(newHeight.toFloat() / newTotal.toFloat())
-
-                val y12 = scaleY((oldHeight + oldValue).toFloat() / oldTotal.toFloat())
-                val y22 = scaleY((newHeight + newValue).toFloat() / newTotal.toFloat())
-
-                poly(x1, y11, y12, x2, y21, y22, style);
-
-                oldHeight += oldValue
-                newHeight += newValue
-            }
-        }
-        for (i in 0 until Model.tupleSize) {
-            showValue(i, Model.styles[i])
-        }
-        for (i in 0 until Model.tupleSize) {
-            val value = Model.colors((Model.current + Model.backLogSize - 1) % Model.backLogSize, i)
-            showText(i, value)
-        }
-
-        showLegend()
     }
 }
