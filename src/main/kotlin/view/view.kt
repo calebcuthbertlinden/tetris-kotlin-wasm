@@ -2,7 +2,7 @@ import kotlinx.interop.wasm.dom.*
 import kotlinx.wasm.jsinterop.*
 
 object Style {
-    val backgroundColor = "#16103f"
+    val backgroundColor = "#000000"
     val teamNumberColor = "#38335b"
     val fontColor = "#000000"
     val styles = arrayOf("#ff7616", "#f72e2e", "#7a6aea", "#4bb8f6", "#ffffff")
@@ -51,26 +51,42 @@ class View(canvas: Canvas): Layout(canvas.getBoundingClientRect()) {
     val context = canvas.getContext("2d");
 
     fun clean() {
+        var localBoardTiles = Model.boardTiles
         var yCoord = 0
-        for (rows in 0 until 20) {
+
+        // setup tetris board
+        for (rows in localBoardTiles) {
             var xCoord = 0
-            for (i in 0 until 10) {
-                context.fillStyle = "#4bb8f6"
-                context.fillRect(xCoord, yCoord, 40, 10);
-                xCoord = xCoord + 40
+            for (columns in rows) {
+                context.fillStyle = Style.backgroundColor
+                context.fillRect(
+                        xCoord,
+                        yCoord,
+                        Model.tileWidth,
+                        Model.tileHeight);
+                xCoord = xCoord + Model.tileWidth
             }
-            yCoord = yCoord + 10
+            yCoord = yCoord + Model.tileHeight
         }
     }
 
     fun render() {
         clean()
 
-        context.fillStyle = "#7a6aea"
-        context.fillRect(40, 10 * Model.counter, 40, 10);
+        // show current tetronimo fall -
+        context.fillStyle = Model.currentTetronimo.color
+        context.fillRect(
+                Model.currentTetronimo.xCoord,
+                Model.currentTetronimo.yCoord ,
+                Model.tileWidth,
+                Model.tileHeight);
 
         // show frozen tetronimos on board
-        /* for (tetr in 0 until Model.tetronimos.size) {}*/
-
+        /* for (tetr in 0 until Model.tetronimos.size) {
+            for (tile in 0 until tetr.boardTiles) {
+                context.fillStyle = tetr.color
+                context.fillRect(tile.xCoord * 40, tile.yCoord * 10, 40, 10)
+            }
+        }*/
     }
 }

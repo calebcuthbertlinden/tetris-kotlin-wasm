@@ -9,35 +9,43 @@
  */
 object Model {
 
-    //////////////////////////
-
-    // The Tetris game board
+    // the Tetris game board
     lateinit var boardTiles: Array<Array<BoardTile>>
     const val boardColumns = 10
     const val boardRows = 20
+    const val tileWidth = 40
+    const val tileHeight = 10
 
-    // The Tetrominos in play
+    // the frozen Tetrominos
     var tetronimos: Array<Tetronimo>? = null
-    var currentTetronimo: Tetronimo? = null
-
-    //////////////////////////
+    // current falling Tetronimo
+    var currentTetronimo: Tetronimo = Tetronimo("", 0, 0, 0, 0, false, "#7a6aea")
 
     var counter = 0
-    var current = 0
-    var maximal = 0
 
     fun createBoard() {
         var row = 0
         var column = 0
+
         boardTiles = Array(boardRows) {
+            row++
             Array(boardColumns) {
+                column++
                 BoardTile(false, row, column)
             }
         }
+
+        // first tetronimo on the board
+        currentTetronimo = Tetronimo("L", 100, tileHeight, tileWidth, tileHeight, false, "#7a6aea")
     }
 
-    fun updateBoard(counterNew: Int) {
-        counter = counterNew
+    fun updateBoard(updatedCounter: Int) {
+        counter = updatedCounter
+        currentTetronimo.yCoord = tileHeight * Model.counter
+    }
+
+    fun createNewTetronimo() {
+        currentTetronimo = Tetronimo("L", tileWidth, tileHeight, tileWidth, tileHeight, false, "#7a6aea");
     }
 
     fun updateTetrominoLocation() {
