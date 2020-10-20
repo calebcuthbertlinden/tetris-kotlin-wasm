@@ -20,10 +20,12 @@ object Model {
     const val tileHeight = 10
     var distanceFromTop = 0;
 
+    var randomModifier = -1
+
     // the frozen Tetrominos
     var tetronimos = arrayListOf<Tetronimo>()
 
-    val colors = arrayOf("#ff7616", "#f72e2e", "#7a6aea", "#4bb8f6", "#ffffff")
+    val colors = arrayOf("#ff7616", "#f72e2e", "#7a6aea", "#4bb8f6", "#ffffff", "#7a6aea", "#f72e2e")
 
     val square = arrayListOf(arrayListOf(true, true), arrayListOf(true, true))
     val upsideDownLeft = arrayListOf(arrayListOf(true, true), arrayListOf(true, true))
@@ -71,32 +73,77 @@ object Model {
     }
 
     fun isTouchingCurrentTetronimo(): Boolean {
-        for (tetro in tetronimos) {
-            var rowCount = 0
-            for (row in currentTetronimo.shape) {
-                rowCount++
+
+        var rowCurrentCount = 0
+        for (rowCurrent in currentTetronimo.shape) {
+
+            // for each column in current falling tetronimos last row
+            var columnCurrentCount = 0
+            for (columnCurrent in rowCurrent) {
+
+                // for each frozen tetronimo
+                for (tetro in tetronimos) {
+
+                    var rowFrozenCount = 0
+                    for (rowFrozen in tetro.shape) {
+
+                        var columnFrozenCount = 0
+                        for (columnFrozen in rowFrozen) {
+
+                            var currentXCoord = currentTetronimo.yCoord + (tileHeight * (rowCurrentCount + 1))
+                            var currentYCoord = tetro.yCoord + (tileHeight * rowFrozenCount)
+                            var frozenXCoord = currentTetronimo.xCoord + (columnCurrentCount * tileWidth)
+                            var frozenYCoord = tetro.xCoord + (columnFrozenCount * tileWidth)
+
+                            if (columnCurrent && columnFrozen && currentXCoord == currentYCoord && frozenXCoord == frozenYCoord) {
+                                return true
+                            }
+
+                            columnFrozenCount++
+
+                        }
+                        rowFrozenCount++
+                    }
+                }
+                columnCurrentCount++
             }
 
-            for (column in currentTetronimo.shape[rowCount - 1]) {
-                if (column &&
-                        (currentTetronimo.yCoord + (tileHeight * rowCount) == tetro.yCoord) &&
-                        (currentTetronimo.xCoord == tetro.xCoord)) {
-                    return true
-                }
-            }
+            rowCurrentCount++
         }
+
         return false
     }
 
     fun createNewTetronimo() {
 
         // TODO generate random start x modifier
-        val x = 1
+        if (randomModifier + 3 > 6) {
+            randomModifier = randomModifier - 3
+        } else {
+            randomModifier = randomModifier + 2
+        }
+
+        var localShape = square
+        when (randomModifier) {
+            0 -> localShape = downRightDown
+            1 -> localShape = square
+            2 -> localShape = upsideDownLeft
+            3 -> localShape = downLeftDown
+            4 -> localShape = upsideDownRight
+            5 -> localShape = fourWide
+            6 -> localShape = downRightDown
+            else -> {
+                print("x is neither 1 nor 2")
+            }
+        }
 
         // TODO generate random color index
-        var color = "#4bb8f6"
+        var color = colors[randomModifier]
+        currentTetronimo = Tetronimo("L", tileWidth, tileHeight, tileWidth * randomModifier, tileHeight, false, color, localShape);
+    }
 
-        currentTetronimo = Tetronimo("L", tileWidth, tileHeight, tileWidth * x, tileHeight, false, color, podium);
+    fun updateLocation() {
+        currentTetronimo.xCoord = currentTetronimo.xCoord + tileWidth
     }
 
     fun getColor() {

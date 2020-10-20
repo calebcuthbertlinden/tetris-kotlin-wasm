@@ -17,4 +17,14 @@ fun main(args: Array<String>) {
     setInterval(gameLoopInterval) {
         tetrisGameLoop()
     }
+
+    document.setter("onmousedown") {
+        arguments: ArrayList<JsValue> ->
+        val event = MouseEvent(arguments[0])
+        println(event)
+
+        // Update location of Tetronimo
+        Model.updateLocation()
+        View(document.getElementById("game").asCanvas).render()
+    }
 }
