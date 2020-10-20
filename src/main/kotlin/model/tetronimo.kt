@@ -14,5 +14,6 @@ data class Tetronimo(
     var xCoord: Int,
     var yCoord: Int,
     var frozen: Boolean,
-    var color: String
+    var color: String,
+    var shape: List<List<Boolean>>
 )
