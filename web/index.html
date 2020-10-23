@@ -10,11 +10,16 @@
         margin: 16px;
         width:  100%;
         height: 100%;
-        margin: 0px;
       }
       #game {
         width: 1600px;
         height: 800px;
+      }
+      .control {
+        list-style-type: none;
+        float:left;
+        width: 50px;
+        text-align: center;
       }
     </style>
   </head>
@@ -22,26 +27,16 @@
     <h4><a href="tutorial.html">Learn how to create Tetris with Kotlin + WASM</a></h4>
     <hr/>
     <div>
-      <h3>How to play</h3>
+      <h3 style="width:220px;text-align:center;">How to play</h3>
       <ul>
-        <li id="move-left"><-</li>
-        <li id="move-right">-></li>
-        <li id="rotate">Rotate</li>
-        <li id="down">Press 'S' to speed up the descent</li>
+        <li class="control" id="move-left"><</li>
+        <li class="control" id="rotate">Rotate</li>
+        <li class="control" id="move-right">></li>
       </ul>
     </div>
-    <hr/>
+    <br>
+    <br>
     <canvas id="game"></canvas>
     <script wasm="./tetris.wasm" src="./tetris.wasm.js"></script>
-    <script>
-        document.addEventListener('keydown', (event) => {
-            if (event.key == 'a') {
-              console.log('MOVE LEFT');
-            }
-            if (event.key == 'd') {
-              console.log('MOVE RIGHT');
-            }
-        });
-    </script>
   </body>
 </html>
