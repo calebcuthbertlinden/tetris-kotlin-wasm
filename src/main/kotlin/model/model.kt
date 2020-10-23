@@ -154,6 +154,17 @@ object Model {
      * Flip the Tetronimo 90 degrees
      */
     fun flipTetromino() {
+        var flippedRows = currentTetronimo.shape[0].size
+        var flippedColumns = currentTetronimo.shape.size
+        var flippedShape: ArrayList<ArrayList<Boolean>> = arrayListOf()
 
+        for (rowIndex in 0 until flippedRows) {
+            var flippedRow: ArrayList<Boolean> = arrayListOf()
+            for (colIndex in flippedColumns - 1 downTo 0) {
+                flippedRow.add(currentTetronimo.shape.get(colIndex).get(rowIndex))
+            }
+            flippedShape.add(flippedRow)
+        }
+        currentTetronimo.shape = flippedShape
     }
 }

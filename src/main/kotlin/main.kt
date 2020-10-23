@@ -24,7 +24,8 @@ fun main(args: Array<String>) {
         println(event)
 
         // Update location of Tetronimo
-        Model.updateLocation(false)
+//        Model.updateLocation(false)
+        Model.flipTetromino()
         View(document.getElementById("game").asCanvas).render()
     }
 }
