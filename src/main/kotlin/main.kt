@@ -7,39 +7,25 @@ const val gameLoopInterval = 1000;
  * This is the game loop that updates the Tetris board with the latest state of the Tetronimos
  * @param canvas The view to be updated
  */
-fun tetrisGameLoop(canvas: Canvas) {
-    fetch(updateBoard()).
-            then { args: ArrayList<JsValue> ->
-                val response = Response(args[0])
-                response.json()
-            }.
-            then { args: ArrayList<JsValue> ->
-                val json = args[0]
-                val colors = JsArray(json.getProperty("colors"))
-                assert(colors.size == Model.tupleSize)
-
-                val tuple = arrayOf<Int>(0, 0, 0, 0, 0)
-                for (i in 0 until colors.size) {
-                    val color = colors[i].getInt("color")
-                    val counter = colors[i].getInt("counter")
-                    tuple[color - 1] = counter
-                }
-                Model.updateBoard(tuple)
-            }.
-            then { View(canvas).render() }
-}
-
-/**
- * Updates the board based off the latest co-ordinates of the Tetronimos
- * @param canvas The view to be updated
- */
-fun updateBoard(): String {
-    return "/stats.json";
+fun tetrisGameLoop() {
+    Model.updateBoard()
+    View(document.getElementById("game").asCanvas).render()
 }
 
 fun main(args: Array<String>) {
-    val canvas = document.getElementById("game").asCanvas
+    Model.createBoard()
     setInterval(gameLoopInterval) {
-        tetrisGameLoop(canvas)
+        tetrisGameLoop()
+    }
+
+    document.setter("onmousedown") {
+        arguments: ArrayList<JsValue> ->
+        val event = MouseEvent(arguments[0])
+        println(event)
+
+        // Update location of Tetronimo
+//        Model.updateLocation(false)
+        Model.flipTetromino()
+        View(document.getElementById("game").asCanvas).render()
     }
 }

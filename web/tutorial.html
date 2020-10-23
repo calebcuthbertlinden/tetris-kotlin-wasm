@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>WASM with Kotlin</title>
+    <style>
+      html, body {
+        margin: 16px;
+        width:  90%;
+        height: 100%;
+      }
+      #game {
+        width: 400px;
+        height: 800px;
+      }
+      pre code {
+        background-color: #eee;
+        border: 1px solid #999;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Building Tetris with WASM and Kotlin</h2>
+    <hr/>
+    <div>
+
+      <h3>What is Web Assembly?</h3>
+      <p>
+        According to webassembly.org, WebAssembly (Wasm) is a binary instruction format for a stack-based virtual machine. Wasm allows you to compile many different languages to be deployed as web applications.
+        Wasm enables high performance applications to be run on the web, and to some is seen as 'the future' of web applications.
+      </p>
+
+      <h3>What is Kotlin?</h3>
+      <p>
+        Something even more exciting than WASM is the new shiny programming language called Kotlin.
+        It can be used in Mobile, Hybrid, Web, Native, Data and Server-Side programming, with many benefits such as:
+        <ul>
+          <li>Massively reduced boilerplate code</li>
+          <li>ZERO null pointer exceptions</li>
+          <li>Interoperability with other languages</li>
+        </ul>
+        Lastly, the reason we are talking about Kotlin is it is one of the languages we can use to compile to WASM
+      </p>
+
+        <hr>
+        <!-- //////////////  HELPER REPO  //////////////// -->
+        <h4>The helper repo that has all the answers: <a href="https://github.com/calebcuthbertlinden/tetris-kotlin-wasm/tree/develop">https://github.com/calebcuthbertlinden/tetris-kotlin-wasm/tree/develop</a></h4>
+
+
+      <!-- //////////////  Step 1 - Download Gradle  //////////////// -->
+
+      <hr>
+      <h3>Step 1 - Download Gradle, our build tool</h3>
+      <p>Gradle is a build tool used for building and compiling applications. All you need to get started is Gradle, the Gradle wrapper, and a build.gradle file in your project.</p>
+      <a href="https://docs.gradle.org/current/userguide/gradle_wrapper.html">Gradle wrapper docs here</a>
+        <p>You need Gradle installed to generate your own gradle wrapper - <a href="https://gradle.org/releases/">install Gradle from here</a>.</p>
+        <p>For now you can download the gradle files from the <a href="https://github.com/calebcuthbertlinden/tetris-kotlin-wasm/tree/master/gradle/wrapper">provided repo</a></p>
+      <p>Once downloaded and placed in your project structure, fill out your gradle.build file. At a later stage, this file is run by the 'build' command and will output your Kotlin code into the required WASM files.</p>
+      <pre>
+        <code>
+          buildscript {
+            // repository locations from the required dependencies
+            repositories {
+              jcenter()
+                maven { url "http://kotlin.bintray.com/kotlinx" }
+                maven { url "https://plugins.gradle.org/m2/" }
+                maven { url "https://dl.bintray.com/jetbrains/kotlin-native-dependencies" }
+            }
+
+            // the dependencies needed for Kotlin and gradle
+            dependencies {
+                classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.72"
+                classpath "com.moowork.gradle:gradle-node-plugin:1.2.0"
+                classpath "org.jetbrains.kotlin:kotlin-native-gradle-plugin:0.6"
+            }
+          }
+
+          // making use of the konan plugin to generate the required wasm files from the code in the srcDir
+          apply plugin: 'konan'
+          konanArtifacts {
+              program('tetris', targets: ['wasm32']) {
+                srcDir 'src/main/kotlin'
+                libraries {
+                useRepo 'lib'
+                klib 'dom'
+              }
+            }
+          }
+        </code>
+      </pre>
+
+      <!-- //////////////  Step 2 - Download DOM and Math libraries  //////////////// -->
+
+      <hr>
+      <h3>Step 2 - Download DOM and Math libraries for Kotlin interoperability</h3>
+      <p>As with any language, you can include libraries with prepackaged code for required functions. For this scenario we will want to include the DOM library for Kotlin interoperability to be able to access the DOM</p>
+      <p>The jsinterop tool comes with Kotlin Native. If you have it, you can run the below commands</p>
+      <pre>
+        <code>
+          jsinterop -pkg kotlinx.interop.wasm.dom -o lib/dom -target wasm32 && rm -Rf lib/dom-build
+          jsinterop -pkg kotlinx.interop.wasm.math -o lib/math -target wasm32 && rm -Rf lib/math-build
+        </code>
+      </pre>
+      <p>If you have problems with this, you can download the libraries directly from <a href="https://github.com/calebcuthbertlinden/tetris-kotlin-wasm/tree/master/lib">the repo</a> and include them in your project</p>
+
+      <!-- //////////////  Step 3 - Build Tetris in Kotlin  //////////////// -->
+      <hr>
+      <h3>Step 3 - Build Tetris in Kotlin</h3>
+      <p>This tutorial assumes that you have basic knowledge of the Kotlin programming language</p>
+      <p>There are three main parts to the Kotlin Tetris code</p>
+      <ul>
+        <li>The Model - Controls the state of the Tetris board and the current Tetronimo in play</li>
+        <li>The View - This renders the Model onto the canvas on the HTML page by using the coordinates of each tetronimo</li>
+        <li>The game loop - this is rendered in the main function that is executed by the WASM file included on the HTML page</li>
+      </ul>
+
+      <p>In the end, it is entirely up to you how you structure this code, but the below is a good skeleton approach to follow. If you find yourself struggling, please refer back to the provided repo</p>
+        <p>It is also VERY NB to note that the directory for this code should be used as the srcDir in the gradle file for the konan task</p>
+
+        <h4>3.1 Setting up the Model</h4>
+        <p>The Model should be control the change in position and orientation of the current tetronimo, and should store the state of the board and all the frozen tetronimos. The methods to handle these things should live here. Have a look at the below methods to understand the different operations the Model and Tetris board needs.</p>
+        <pre>
+          <code>
+            object Model {
+              // the frozen Tetrominos
+              var tetronimos = arrayListOf&lt;Tetronimo&gt;()
+
+              // current falling Tetronimo
+              var currentTetronimo: Tetronimo = Tetronimo("", 0, 0, 0, 0, false, "#7a6aea", TetronimoType.SQUARE)
+
+              // Create the Tetris board to a set number of tiles based on rows and collumns. Initialise the first Tetronimo
+              fun createBoard() {}
+
+              // Move the current tetronimo down the board and initialise a new one if need be and add the previously frozen one to the frozen list
+              fun updateBoard() {}
+
+              // Method to check if the current Tetronimo is touching the bottom of the board
+              fun isTouchingCurrentTetronimo(): Boolean {}
+
+              // Create a new Tetronimo of one of the existing types
+              fun createNewTetronimo() {}
+
+              // Move the Tetronimo one tile to either side, depending on the input
+              fun updateLocation(left: Boolean) {}
+
+              // Flip the Tetronimo 90 degrees
+              fun flipTetromino() {}
+            }
+          </code>
+        </pre>
+
+        <p>The Tetronimo should know where on the board it is. This is how to know where on the canvas to display the Tetronimo</p>
+        <p>This is determined by the xCoord and yCoord</p>
+        <pre>
+          <code>
+            data class Tetronimo(
+                var readableName: String = " ",
+                var height: Int,
+                var width: Int,
+                var xCoord: Int,
+                var yCoord: Int,
+                var frozen: Boolean,
+                var color: String,
+                var shape: List&lt;List&lt;Boolean&gt;&gt;
+            )
+          </code>
+        </pre>
+
+        <p>Finally, the shape of each Tetronimo is defined by a class, and assigned to the shape property of the Tetronimo class</p>
+        <p>The shape is a 2D array of boolean values defining the shape. The shape can be used to determine the coordinates of each part of the shape on the board</p>
+        <pre>
+          <code>
+            // shapes of tetronimos
+            class TetronimoType {
+                companion object {
+                    val SQUARE = arrayListOf(arrayListOf(true, true), arrayListOf(true, true))
+                    val UPSIDE_DOWN_LEFT = arrayListOf(arrayListOf(true, true), arrayListOf(true, true))
+                    val DOWN_LEFT_DOWN = arrayListOf(arrayListOf(false, true), arrayListOf(true, true), arrayListOf(true, false))
+                    val UPSIDE_DOWN_RIGHT = arrayListOf(arrayListOf(true, true), arrayListOf(true, false), arrayListOf(true, false))
+                    val FOUR_WIDE = arrayListOf(arrayListOf(true), arrayListOf(true), arrayListOf(true), arrayListOf(true))
+                    val PODIUM = arrayListOf(arrayListOf(false, true, false), arrayListOf(true, true, true))
+                    val DOWN_RIGHT_DOWN = arrayListOf(arrayListOf(true, false), arrayListOf(true, true), arrayListOf(false, true))
+                }
+            }
+          </code>
+        </pre>
+
+        <h4>3.2 Setting up the View</h4>
+        <p>The view should render the black background game board, the frozen tetronimos and the current falling tetronimo</p>
+        <pre>
+          <code>
+            // takes in a canvas (fetched from the HTML file)
+            class View(canvas: Canvas){
+                val context = canvas.getContext("2d");
+
+                fun clean() {
+                    // setup tetris board
+                    for (rows in localBoardTiles) { // display canvas blocks }
+
+                    // display all frozen tetronimos
+                    for (tetr in Model.tetronimos) { // display canvas blocks }
+                }
+
+                fun render() {
+                    clean()
+
+                    // show current tetronimo falling
+                    context.fillStyle = Model.currentTetronimo.color
+                    var rowCount = 0
+                    for (row in Model.currentTetronimo.shape) {
+                        // display canvas blocks
+                        var collumnCount = 0
+                        for (column in row) {
+                            if (column) {
+                                context.fillRect(
+                                        Model.currentTetronimo.xCoord + (collumnCount * Model.tileWidth),
+                                        Model.currentTetronimo.yCoord + (rowCount * Model.tileHeight),
+                                        Model.tileWidth,
+                                        Model.tileHeight)
+                            }
+                            collumnCount++
+                        }
+                        rowCount++
+                    }
+                }
+            }
+          </code>
+        </pre>
+
+        <h4>3.3 The game loop</h4>
+        <p>The main function should initiate the game loop at a set interval (1 second)</p>
+        <p>The game loop is responsible for telling the model to update, and for telling the view to render after the model has updated</p>
+        <p>Finally, it shoud listen to key board events in order to move and flip the falling tetronimo</p>
+        <pre>
+          <code>
+            const val gameLoopInterval = 1000;
+
+            fun tetrisGameLoop() {
+                Model.updateBoard()
+                View(document.getElementById("game").asCanvas).render()
+            }
+
+            fun main(args: Array&lt;String&gt;) {
+                Model.createBoard()
+                setInterval(gameLoopInterval) {
+                    tetrisGameLoop()
+                }
+
+                document.setter("onkeydown") {
+                    val event = KeyboardEvent(arguments[0])
+                    // Update location of Tetronimo
+                    Model.updateLocation(false)
+                    View(document.getElementById("game").asCanvas).render()
+                }
+
+                document.setter("onmousedown") {
+                    Model.flipTetromino()
+                    View(document.getElementById("game").asCanvas).render()
+                }
+            }
+          </code>
+        </pre>
+
+      <!-- //////////////  Step 4 - Create base HTML page  //////////////// -->
+      <hr>
+      <h3>Step 4 - Create base HTML page</h3>
+      <p>All that is required for this step is to set up a very basic HTML page. Normal standard HTML 5, nothing special.</p>
+      <pre>
+        <code>
+          &lt;!DOCTYPE html&gt;
+          &lt;html lang="en"&gt;
+            &lt;head&gt;
+              &lt;meta charset="UTF-8"&gt;
+              &lt;title>Tetris!&lt;/title&gt;
+            &lt;/head&gt;
+            &lt;body&gt;
+            &lt;/body&gt;
+          &lt;/html&gt;
+        </code>
+      </pre>
+
+      <!-- //////////////  Step 5 - Call wasm through wasm js file  //////////////// -->
+      <hr>
+      <h3>Step 5 - Compile your Kotlin code into WASM</h3>
+      <p>The gradle file you set up in the beginning? All that is needed now is to run that and see the magic.</p>
+      <p>If you are using an IDE like intellij you can use the built in Gradle integration to run the 'build' gradle command, otherwise run the below in your command line:</p>
+      <pre>
+        <code>
+          `./gradlew build`
+        </code>
+      </pre>
+      <p>This will create files and output them to the specified location in your build gradle file</p>
+
+      <!-- //////////////  Step 6 - Call wasm through wasm js file  //////////////// -->
+      <hr>
+      <h3>Step 6 - Call wasm through wasm js file</h3>
+      <p>Copy the outputed files from the previous step into the same folder as your HTML page</p>
+      <p>Add the below code to the body of your HTML page. A canvas that will be accessed and used by the Kotlin code, and then the code to execute the WASM program</p>
+      <pre>
+        <code>
+          &lt;canvas id="game"&gt;&lt;/canvas&gt;
+          &lt;script wasm="./tetris.wasm" src="./tetris.wasm.js"&gt;&lt;/script&gt;
+        </code>
+      </pre>
+
+      <!-- //////////////  Step 7 - Install localserver to test  //////////////// -->
+      <hr>
+      <h3>Step 6 - Install localserver to test</h3>
+      <p>We need a way to serve the index, wasm and js files. For this we are going to use simplehttpserver, found <a href="https://github.com/GoogleChromeLabs/simplehttp2server">here</a></p>
+        <p>Download and place this executable for the server in the location of the HTML page</p>
+        <p>Run the server, open your browser, and navigate to localhost:5000</p>
+        <p>Voila! You have Tetris</p>
+
+    </div>
+    <hr/>
+  </body>
+</html>

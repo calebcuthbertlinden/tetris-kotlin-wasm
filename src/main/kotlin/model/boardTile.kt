@@ -5,7 +5,7 @@
  * @property yCoord y coordinate of Tetromino on the Tetris board
  */
 data class BoardTile(
-    val isCovered: Boolean = false,
-    val xCoord: Int?,
-    val yCoord: Int?
+        var isCovered: Boolean = false,
+        var xCoord: Int,
+        var yCoord: Int
 )
