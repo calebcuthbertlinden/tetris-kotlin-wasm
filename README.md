@@ -1,4 +1,12 @@
 # How to build Tetris using Kotlin + Web Assembly
+
+1. Clone this repo
+2. Open the web folder
+3. Run the simplehttp2server_windows_amd64.exe
+4. Navigate to localhost:5000
+
+-----------------------------------------
+
 #### Project setup
 1. Install Kotlin Native
 2. Install Gradle
