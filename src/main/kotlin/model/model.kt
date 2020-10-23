@@ -18,8 +18,8 @@ object Model {
     lateinit var boardTiles: Array<Array<BoardTile>>
     const val boardColumns = 10
     const val boardRows = 20
-    const val tileWidth = 40
-    const val tileHeight = 10
+    const val tileWidth = 5
+    const val tileHeight = 5
     var distanceFromTop = 0;
 
     var randomModifier = -1
@@ -47,7 +47,7 @@ object Model {
         }
 
         // first tetronimo on the board
-        currentTetronimo = Tetronimo("L", 100, tileHeight, tileWidth, tileHeight, false, "#7a6aea", TetronimoType.SQUARE)
+        currentTetronimo = Tetronimo("L", 5, tileHeight, tileWidth, tileHeight, false, "#7a6aea", TetronimoType.SQUARE)
     }
 
     /**
@@ -55,21 +55,30 @@ object Model {
      * Initialise a new one if need be and add the previously frozen one to the frozen list
      */
     fun updateBoard() {
+        var complete = false
         if (currentTetronimo.frozen) {
             distanceFromTop = 0
-            createNewTetronimo()
-        }
-
-        currentTetronimo.yCoord = tileHeight * distanceFromTop
-
-        if (distanceFromTop == 14 || isTouchingCurrentTetronimo()) {
-            currentTetronimo.frozen = true
-            if (tetronimos.size < 14) {
-                tetronimos.add(currentTetronimo)
+            if (currentTetronimo.yCoord == 0) {
+                complete = true
+            } else {
+                createNewTetronimo()
             }
         }
 
-        distanceFromTop++
+        if (!complete) {
+            currentTetronimo.yCoord = tileHeight * distanceFromTop
+
+            if (hasTouchedTheBottom() || isTouchingCurrentTetronimo()) {
+                currentTetronimo.frozen = true
+                tetronimos.add(currentTetronimo)
+            }
+
+            distanceFromTop++
+        }
+    }
+
+    fun hasTouchedTheBottom(): Boolean {
+        return distanceFromTop == 20 - currentTetronimo.shape.size
     }
 
     /**
@@ -116,10 +125,9 @@ object Model {
     fun createNewTetronimo() {
 
         // TODO generate random start x modifier
-        if (randomModifier + 3 > 6) {
-            randomModifier = randomModifier - 3
-        } else {
-            randomModifier = randomModifier + 2
+        randomModifier++;
+        if (randomModifier > 6) {
+            randomModifier = 0
         }
 
         var localShape = TetronimoType.SQUARE
@@ -143,10 +151,13 @@ object Model {
      * Move the Tetronimo one tile to either side, depending on the input
      */
     fun updateLocation(left: Boolean) {
-        if (left) {
-            currentTetronimo.xCoord = currentTetronimo.xCoord - tileWidth
-        } else {
-            currentTetronimo.xCoord = currentTetronimo.xCoord + tileWidth
+        if (currentTetronimo.xCoord != 0 && left ||
+                (currentTetronimo.xCoord + (currentTetronimo.shape[0].size * tileWidth)) < 50 && !left) {
+            if (left) {
+                currentTetronimo.xCoord = currentTetronimo.xCoord - tileWidth
+            } else {
+                currentTetronimo.xCoord = currentTetronimo.xCoord + tileWidth
+            }
         }
     }
 

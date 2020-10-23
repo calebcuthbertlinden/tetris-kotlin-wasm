@@ -233,13 +233,17 @@
         <h4>3.3 The game loop</h4>
         <p>The main function should initiate the game loop at a set interval (1 second)</p>
         <p>The game loop is responsible for telling the model to update, and for telling the view to render after the model has updated</p>
-        <p>Finally, it shoud listen to key board events in order to move and flip the falling tetronimo</p>
+        <p>Finally, it should listen to button clicks in order to move and flip the falling tetronimo (Kotlin/WASM doesn't seem to play well with keyboard events yet)</p>
         <pre>
           <code>
             const val gameLoopInterval = 1000;
 
             fun tetrisGameLoop() {
                 Model.updateBoard()
+                renderView()
+            }
+
+            fun renderView() {
                 View(document.getElementById("game").asCanvas).render()
             }
 
@@ -249,16 +253,19 @@
                     tetrisGameLoop()
                 }
 
-                document.setter("onkeydown") {
-                    val event = KeyboardEvent(arguments[0])
-                    // Update location of Tetronimo
-                    Model.updateLocation(false)
-                    View(document.getElementById("game").asCanvas).render()
+                document.getElementById("move-left").setter("onclick") {
+                    Model.updateLocation(true)
+                    renderView()
                 }
 
-                document.setter("onmousedown") {
+                document.getElementById("move-right").setter("onclick") {
+                    Model.updateLocation(false)
+                    renderView()
+                }
+
+                document.getElementById("rotate").setter("onclick") {
                     Model.flipTetromino()
-                    View(document.getElementById("game").asCanvas).render()
+                    renderView()
                 }
             }
           </code>

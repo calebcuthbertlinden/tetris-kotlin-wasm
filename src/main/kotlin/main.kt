@@ -9,6 +9,10 @@ const val gameLoopInterval = 1000;
  */
 fun tetrisGameLoop() {
     Model.updateBoard()
+    renderView()
+}
+
+fun renderView() {
     View(document.getElementById("game").asCanvas).render()
 }
 
@@ -18,14 +22,18 @@ fun main(args: Array<String>) {
         tetrisGameLoop()
     }
 
-    document.setter("onmousedown") {
-        arguments: ArrayList<JsValue> ->
-        val event = MouseEvent(arguments[0])
-        println(event)
+    document.getElementById("move-left").setter("onclick") {
+        Model.updateLocation(true)
+        renderView()
+    }
 
-        // Update location of Tetronimo
-//        Model.updateLocation(false)
+    document.getElementById("move-right").setter("onclick") {
+        Model.updateLocation(false)
+        renderView()
+    }
+
+    document.getElementById("rotate").setter("onclick") {
         Model.flipTetromino()
-        View(document.getElementById("game").asCanvas).render()
+        renderView()
     }
 }
